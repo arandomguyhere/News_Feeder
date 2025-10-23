@@ -2,31 +2,49 @@
 
 # Data Sources
 sources:
-  rss_feeds:
-    - name: "BBC World"
-      url: "http://feeds.bbci.co.uk/news/world/rss.xml"
-      category: "news"
-    - name: "Reuters World"
-      url: "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best"
-      category: "news"
-    - name: "Al Jazeera"
-      url: "https://www.aljazeera.com/xml/rss/all.xml"
-      category: "news"
-    - name: "The Guardian World"
-      url: "https://www.theguardian.com/world/rss"
-      category: "news"
-    - name: "OSINT Technotes"
-      url: "https://www.osintechnotes.com/feed/"
-      category: "osint"
-
-  # NewsAPI configuration (optional - requires API key)
+  # NewsAPI - Aggregates from 80k+ news sources (free tier available)
   newsapi:
-    enabled: false
-    api_key: "${NEWSAPI_KEY}"  # Set in .env file
+    enabled: true
+    api_key: "${NEWSAPI_KEY}"  # Set in .env file or leave empty for demo
     queries:
-      - "cybersecurity"
+      - "cybersecurity attack"
       - "data breach"
       - "geopolitics"
+      - "military conflict"
+      - "intelligence leak"
+      - "cyber espionage"
+    language: "en"
+    page_size: 100
+
+  # GDELT - Global news and events database (no API key required)
+  gdelt:
+    enabled: true
+    queries:
+      - "cyberattack"
+      - "data breach"
+      - "military"
+      - "intelligence"
+      - "surveillance"
+    max_records: 250
+
+  # Web scrapers for specific OSINT sources
+  scrapers:
+    enabled: true
+    targets:
+      - name: "Google News"
+        type: "google_news"
+        queries:
+          - "osint"
+          - "cybersecurity breach"
+          - "intelligence report"
+        max_results: 50
+
+      - name: "Bing News"
+        type: "bing_news"
+        queries:
+          - "cyber attack"
+          - "security incident"
+        max_results: 50
 
 # Processing settings
 processing:

@@ -1,276 +1,273 @@
-# 🔍 OSINT Mosaic Intelligence Aggregator
+# 🔍 OSINT Story Aggregator - Mosaic Intelligence
 
-An intelligent OSINT (Open Source Intelligence) system that collects cybersecurity stories from 50+ Google News searches and uses **mosaic intelligence** techniques to identify connections between seemingly separate events, building the bigger picture.
+A Python-based OSINT (Open Source Intelligence) tool that collects stories from multiple sources and identifies related content to build comprehensive intelligence pictures. Think of it as **mosaic intelligence** - individual stories are tiles that contribute to a bigger picture.
 
-## 🎯 Concept: Mosaic Intelligence
+## 🎯 Features
 
-Think of each news story as a tile in a mosaic. Individual tiles may not reveal much, but when you arrange them together and identify connections, a larger picture emerges. This tool:
+- **Multi-Source Collection**: Gathers stories from:
+  - NewsAPI (80k+ news sources)
+  - GDELT (Global news events database)
+  - Google News scraping
+  - Bing News scraping
 
-- **Collects** stories from multiple sources (nation-state actors, APTs, vulnerabilities, critical infrastructure)
-- **Extracts** entities (countries, threat actors, malware, companies, sectors)
-- **Correlates** stories based on shared entities, topics, and timing
-- **Clusters** related stories into intelligence threads
-- **Visualizes** connections to reveal patterns and campaigns
+- **NLP Processing**:
+  - Named Entity Recognition (people, organizations, locations, events)
+  - Keyword extraction
+  - Text similarity analysis
+
+- **Story Correlation**:
+  - Finds related stories across sources
+  - Clusters stories by similarity
+  - Identifies shared entities and topics
+  - Temporal and semantic relationship detection
+
+- **Output Formats**:
+  - JSON (stories, clusters, summaries)
+  - HTML reports with visualizations
+  - Entity graphs and timelines
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- pip
+- Internet connection
+
+### Installation
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/arandomguyhere/News_Feeder.git
+cd News_Feeder
+```
+
+2. **Run the setup script**:
+```bash
+./setup.sh
+```
+
+This will:
+- Create a virtual environment
+- Install all dependencies
+- Download spaCy language model
+- Create necessary directories
+- Set up configuration files
+
+3. **Configure API keys (optional)**:
+```bash
+cp .env.example .env
+# Edit .env and add your NewsAPI key (optional)
+```
+
+### Usage
+
+**Activate the virtual environment**:
+```bash
+source venv/bin/activate
+```
+
+**Run the aggregator**:
+```bash
+python aggregator.py
+```
+
+The aggregator will:
+1. Collect stories from all configured sources
+2. Process them with NLP to extract entities and keywords
+3. Find related stories and create clusters
+4. Generate output reports in `data/output/`
+
+## 📋 Configuration
+
+Edit `config/config.yaml` to customize:
+
+- **Data sources**: Enable/disable collectors, add queries
+- **Processing settings**: Similarity thresholds, entity types
+- **Output options**: Formats, report types
+
+Example configuration:
+
+```yaml
+sources:
+  newsapi:
+    enabled: true
+    queries:
+      - "cybersecurity attack"
+      - "data breach"
+
+  gdelt:
+    enabled: true
+    queries:
+      - "cyberattack"
+      - "intelligence"
+
+processing:
+  similarity_threshold: 0.3  # 0.0-1.0
+  max_story_age_hours: 48
+
+output:
+  format: "both"  # json, html, or both
+```
+
+## 📊 Understanding Output
+
+### JSON Files
+
+- **`stories_*.json`**: All collected stories with metadata
+- **`clusters_*.json`**: Related story clusters with shared entities
+- **`summary_*.json`**: High-level statistics and overview
+
+### HTML Reports
+
+Interactive reports showing:
+- Story clusters by topic
+- Shared entities across stories
+- Timeline of events
+- Source distribution
+
+## 🔑 API Keys
+
+### NewsAPI (Optional)
+
+Get a free API key at [newsapi.org](https://newsapi.org/):
+- Free tier: 100 requests/day
+- Access to 80,000+ news sources
+
+Add to `.env`:
+```
+NEWSAPI_KEY=your_key_here
+```
+
+**Note**: The aggregator works without NewsAPI using GDELT and web scraping, but NewsAPI provides richer content.
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│         Google News Multi-Search Collector          │
-│  50+ searches: Nation-states, APTs, CVEs, Sectors   │
-└─────────────────────┬───────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────┐
-│           Story Correlation Engine                   │
-│  • Entity Extraction (regex-based NLP)              │
-│  • Similarity Calculation (entity + word overlap)   │
-│  • Clustering (group related stories)               │
-│  • Connection Identification (shared entities)      │
-└─────────────────────┬───────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────┐
-│         Intelligence Report Generator                │
-│  • JSON: Full data export                           │
-│  • HTML: Interactive visual report                  │
-│  • Clusters: Related story groups                   │
-│  • Timeline: Temporal view                          │
-│  • Graph: Network visualization (future)            │
-└─────────────────────────────────────────────────────┘
-```
-
-## 📊 Data Sources
-
-The collector searches Google News for:
-
-**Nation-State Cyber Operations:**
-- China, Russia, Iran, North Korea, DPRK cyber activities
-- State-sponsored hacking campaigns
-
-**Threat Actors & APTs:**
-- Advanced Persistent Threats (APT groups)
-- Ransomware operations
-- Named threat actors (Salt Typhoon, Volt Typhoon, etc.)
-
-**Critical Infrastructure:**
-- Energy sector, power grid attacks
-- Healthcare, financial sector targeting
-- Supply chain compromises
-
-**Vulnerabilities:**
-- Zero-day exploits
-- CVE disclosures
-- VPN/network security (Ivanti, etc.)
-
-**Emerging Tech:**
-- AI security, quantum threats
-- 5G, IoT security
-- Blockchain vulnerabilities
-
-**Premium Sources:**
-- Financial Times, Wall Street Journal, Reuters, Bloomberg
-- Security-focused: The Register, Dark Reading, Krebs, SecurityWeek
-- Tech: TechCrunch, Wired, Forbes
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/arandomguyhere/News_Feeder.git
-cd News_Feeder
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Run Intelligence Collection
-
-```bash
-# Run the mosaic intelligence aggregator
-python3 mosaic_intelligence.py
-```
-
-This will:
-1. Search 50+ Google News queries (takes 5-10 minutes)
-2. Collect and deduplicate stories
-3. Analyze connections and build clusters
-4. Generate HTML and JSON reports
-
-### View Results
-
-```bash
-# Open the interactive HTML report
-open data/output/mosaic_intelligence_report.html
-
-# Or view in browser
-firefox docs/index.html
-```
-
-## 📁 Project Structure
-
-```
 News_Feeder/
-├── mosaic_intelligence.py       # Main orchestration script
-├── requirements.txt             # Python dependencies
+├── aggregator.py          # Main orchestration script
 ├── config/
-│   └── config.yaml             # Configuration settings
+│   └── config.yaml        # Configuration file
 ├── src/
-│   ├── collectors/
-│   │   └── google_news_scraper.py    # Multi-search Google News collector
-│   ├── processors/
-│   │   └── story_correlator.py       # Mosaic intelligence engine
-│   └── correlators/                  # (Future: advanced correlation)
+│   ├── collectors/        # Data collection modules
+│   │   ├── newsapi_collector.py
+│   │   ├── gdelt_collector.py
+│   │   └── web_scraper_collector.py
+│   ├── processors/        # NLP processing
+│   │   └── nlp_processor.py
+│   └── correlators/       # Story correlation
+│       └── story_correlator.py
 ├── data/
-│   ├── raw/                    # Raw collected stories (JSON)
-│   ├── processed/              # (Future: NLP-processed data)
-│   └── output/                 # Intelligence reports
-└── docs/
-    ├── index.html              # Latest HTML report (web view)
-    └── latest_intelligence.json # Latest JSON data
+│   └── output/           # Generated reports
+└── logs/                 # Log files
 ```
 
-## 🔬 How It Works
+## 🔧 Advanced Usage
 
-### 1. Collection Phase
-The Google News scraper runs 50+ searches covering:
-- Cyber operations by nation-state
-- APT group activities
-- Vulnerability disclosures
-- Sector-specific attacks
-- Premium news sources
+### Custom Queries
 
-Each search collects up to 10 articles, with deduplication applied.
-
-### 2. Correlation Phase
-The story correlator:
-- **Extracts entities** using regex patterns for:
-  - Countries (China, Russia, Iran, etc.)
-  - Threat actors (APT groups)
-  - Malware families
-  - Vulnerabilities (CVEs)
-  - Attack techniques
-  - Targeted sectors
-
-- **Calculates similarity** between stories:
-  - Shared entities (70% weight)
-  - Word overlap (30% weight)
-
-- **Forms clusters** of related stories (similarity threshold: 0.3)
-
-### 3. Intelligence Building
-The system identifies:
-- **Story clusters**: Groups of related stories (e.g., all stories about a specific campaign)
-- **Connection points**: Entities appearing in multiple stories
-- **Temporal patterns**: Stories emerging at the same time
-- **Cross-domain links**: Stories connecting different sectors or actors
-
-### 4. Report Generation
-Outputs include:
-- **HTML Report**: Interactive visual report with:
-  - Summary statistics
-  - Top themes
-  - Key connection points
-  - Story clusters
-  - Timeline view
-
-- **JSON Export**: Complete structured data for further analysis
-
-## 📈 Example Use Cases
-
-1. **Campaign Tracking**: Identify stories about the same APT campaign across different sources
-2. **Attribution**: Find connections between different attacks by the same actor
-3. **Threat Landscape**: See emerging threats and trending attack methods
-4. **Sector Analysis**: Track threats to specific industries (healthcare, finance, etc.)
-5. **Geopolitical Cyber**: Monitor nation-state cyber activities
-6. **Supply Chain**: Connect stories about interconnected supply chain compromises
-
-## ⚙️ Configuration
-
-Edit `config/config.yaml` to customize:
+Edit `config/config.yaml` to add your own search queries:
 
 ```yaml
-# Correlation sensitivity
+sources:
+  gdelt:
+    queries:
+      - "your topic here"
+      - "another topic"
+```
+
+### Adjusting Similarity Threshold
+
+Higher threshold = stricter matching (fewer, more related clusters):
+
+```yaml
 processing:
-  similarity_threshold: 0.3  # Lower = more connections (0.0-1.0)
-
-# Output formats
-output:
-  format: "json"  # json, html, or both
-  reports:
-    timeline: true
-    clusters: true
-    entity_graph: true
+  similarity_threshold: 0.5  # Range: 0.0-1.0
 ```
 
-## 🔮 Future Enhancements
+### Adding New Collectors
 
-**Phase 2 - Advanced NLP:**
-- [ ] spaCy NER for better entity extraction
-- [ ] Sentence-BERT embeddings for semantic similarity
-- [ ] Topic modeling (LDA)
-- [ ] Sentiment analysis
-
-**Phase 3 - Visualization:**
-- [ ] Interactive network graph (D3.js/Vis.js)
-- [ ] Timeline visualization
-- [ ] Geographic mapping
-- [ ] Real-time dashboard
-
-**Phase 4 - Additional Sources:**
-- [ ] Twitter/X monitoring
-- [ ] Reddit OSINT forums
-- [ ] GDELT database integration
-- [ ] Telegram channels
-- [ ] Dark web monitoring
-
-**Phase 5 - Intelligence Features:**
-- [ ] Threat scoring
-- [ ] Automated alerts
-- [ ] IOC extraction
-- [ ] MITRE ATT&CK mapping
-- [ ] Campaign attribution
-
-## 🛠️ Development
-
-### Running Individual Components
-
-```bash
-# Test Google News scraper
-python3 -c "from src.collectors.google_news_scraper import scrape_google_news_multi; scrape_google_news_multi()"
-
-# Test correlation engine
-python3 src/processors/story_correlator.py
-```
-
-### Adding New Search Queries
-
-Edit `src/collectors/google_news_scraper.py` and add to the `searches` list:
+Extend `BaseCollector` class in `src/collectors/`:
 
 ```python
-searches = [
-    # Your new search
-    ("your query when:24h", "Your Category Name"),
-    # ... existing searches
-]
+class MyCollector(BaseCollector):
+    def collect(self) -> List[Story]:
+        # Your collection logic
+        pass
 ```
 
-## 📝 License
+## 📈 Use Cases
 
-See LICENSE file for details.
+- **Threat Intelligence**: Track cybersecurity incidents across sources
+- **Geopolitical Analysis**: Monitor evolving situations globally
+- **Brand Monitoring**: Find all mentions of topics/entities
+- **Research**: Aggregate information on specific subjects
+- **News Analysis**: Understand story coverage patterns
 
 ## 🤝 Contributing
 
-Contributions welcome! Areas of interest:
-- Additional data sources
-- Better NLP/entity extraction
-- Visualization improvements
-- New correlation algorithms
-- IOC extraction
-- MITRE ATT&CK mapping
+Contributions welcome! Areas for improvement:
 
-## 🙏 Acknowledgments
+- Additional data sources (Twitter, Reddit, etc.)
+- Advanced NLP (semantic embeddings, topic modeling)
+- Graph database integration (Neo4j)
+- Real-time monitoring
+- Web dashboard
+- Advanced visualizations
 
-Built for OSINT analysts, threat researchers, and security professionals who need to connect the dots across multiple information sources to build comprehensive threat intelligence.
+## 📝 License
+
+MIT License - see LICENSE file
+
+## ⚠️ Ethical Use
+
+This tool is for **defensive security and research purposes only**:
+- ✅ Threat intelligence gathering
+- ✅ Security research
+- ✅ News analysis
+- ✅ Academic research
+- ❌ Malicious reconnaissance
+- ❌ Privacy invasion
+- ❌ Unauthorized data harvesting
+
+Always respect:
+- Website terms of service
+- Rate limiting
+- robots.txt files
+- Privacy laws and regulations
+
+## 🐛 Troubleshooting
+
+**"spaCy model not found"**:
+```bash
+python -m spacy download en_core_web_sm
+```
+
+**"No stories collected"**:
+- Check your internet connection
+- Verify API keys (if using NewsAPI)
+- Check logs in `logs/aggregator.log`
+
+**"Import errors"**:
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 📚 Resources
+
+- [OSINT Framework](https://osintframework.com/)
+- [Bellingcat](https://www.bellingcat.com/)
+- [GDELT Project](https://www.gdeltproject.org/)
+- [spaCy Documentation](https://spacy.io/)
+
+## 📞 Support
+
+For issues and questions:
+- Open an issue on GitHub
+- Check existing documentation
+- Review logs in `logs/`
+
+---
+
+**Built with Python, spaCy, and open-source intelligence principles**
