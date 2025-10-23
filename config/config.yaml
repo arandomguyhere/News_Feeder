@@ -1,0 +1,66 @@
+# OSINT Story Aggregator Configuration
+
+# Data Sources
+sources:
+  rss_feeds:
+    - name: "BBC World"
+      url: "http://feeds.bbci.co.uk/news/world/rss.xml"
+      category: "news"
+    - name: "Reuters World"
+      url: "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best"
+      category: "news"
+    - name: "Al Jazeera"
+      url: "https://www.aljazeera.com/xml/rss/all.xml"
+      category: "news"
+    - name: "The Guardian World"
+      url: "https://www.theguardian.com/world/rss"
+      category: "news"
+    - name: "OSINT Technotes"
+      url: "https://www.osintechnotes.com/feed/"
+      category: "osint"
+
+  # NewsAPI configuration (optional - requires API key)
+  newsapi:
+    enabled: false
+    api_key: "${NEWSAPI_KEY}"  # Set in .env file
+    queries:
+      - "cybersecurity"
+      - "data breach"
+      - "geopolitics"
+
+# Processing settings
+processing:
+  # Minimum similarity score to consider stories related (0.0-1.0)
+  similarity_threshold: 0.3
+
+  # Maximum age of stories to process (in hours)
+  max_story_age_hours: 48
+
+  # Entity extraction settings
+  entity_types:
+    - PERSON
+    - ORG
+    - GPE  # Geopolitical entity (countries, cities)
+    - LOC  # Non-GPE locations
+    - EVENT
+    - DATE
+
+  # Language filter (ISO codes)
+  languages:
+    - en
+
+# Output settings
+output:
+  format: "json"  # json, html, or both
+  directory: "data/output"
+
+  # Generate report files
+  reports:
+    timeline: true
+    clusters: true
+    entity_graph: true
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/aggregator.log"
