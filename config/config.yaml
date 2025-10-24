@@ -1,0 +1,85 @@
+# OSINT Story Aggregator Configuration
+
+# Data Sources
+sources:
+  # NewsAPI - Aggregates from 80k+ news sources (free tier available)
+  newsapi:
+    enabled: true
+    api_key: "${NEWSAPI_KEY}"  # Set in .env file or leave empty for demo
+    queries:
+      - "cybersecurity attack"
+      - "data breach"
+      - "geopolitics"
+      - "military conflict"
+      - "intelligence leak"
+      - "cyber espionage"
+    language: "en"
+    page_size: 100
+
+  # GDELT - Global news and events database (no API key required)
+  gdelt:
+    enabled: true
+    queries:
+      - "cyberattack"
+      - "data breach"
+      - "military"
+      - "intelligence"
+      - "surveillance"
+    max_records: 250
+
+  # Web scrapers for specific OSINT sources
+  scrapers:
+    enabled: true
+    targets:
+      - name: "Google News"
+        type: "google_news"
+        queries:
+          - "osint"
+          - "cybersecurity breach"
+          - "intelligence report"
+        max_results: 50
+
+      - name: "Bing News"
+        type: "bing_news"
+        queries:
+          - "cyber attack"
+          - "security incident"
+        max_results: 50
+
+# Processing settings
+processing:
+  # Minimum similarity score to consider stories related (0.0-1.0)
+  # Lower values (0.1-0.2) find more connections, higher values (0.4+) are stricter
+  similarity_threshold: 0.15
+
+  # Maximum age of stories to process (in hours)
+  max_story_age_hours: 48
+
+  # Entity extraction settings
+  entity_types:
+    - PERSON
+    - ORG
+    - GPE  # Geopolitical entity (countries, cities)
+    - LOC  # Non-GPE locations
+    - EVENT
+    - DATE
+
+  # Language filter (ISO codes)
+  languages:
+    - en
+
+# Output settings
+output:
+  format: "both"  # json, html, or both
+  directory: "data/output"
+
+  # Generate report files
+  reports:
+    timeline: true
+    clusters: true
+    entity_graph: true
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/aggregator.log"

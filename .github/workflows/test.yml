@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master, claude/** ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run basic functionality tests
+      run: |
+        python test_aggregator.py
+
+    - name: Verify imports
+      run: |
+        python -c "from src.collectors import NewsAPICollector, GDELTCollector, WebScraperCollector"
+        python -c "from src.processors import NLPProcessor"
+        python -c "from src.correlators import StoryCorrelator"
+
+    - name: Check code with pylint (optional)
+      continue-on-error: true
+      run: |
+        pip install pylint
+        pylint src/ --disable=all --enable=E || true
