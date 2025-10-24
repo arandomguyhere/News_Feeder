@@ -271,3 +271,26 @@ For issues and questions:
 ---
 
 **Built with Python, spaCy, and open-source intelligence principles**
+
+## 🌐 View Reports Online (GitHub Pages)
+
+You can view your generated reports online using GitHub Pages!
+
+**Your GitHub Pages URL:** https://arandomguyhere.github.io/News_Feeder/
+
+### Setup (One-Time)
+1. Go to **Settings** → **Pages** in your GitHub repository
+2. Under "Build and deployment", set **Source** to **GitHub Actions**
+3. Go to **Actions** tab → **Deploy to GitHub Pages** → **Run workflow**
+4. Wait 2-3 minutes and visit your Pages URL
+
+See [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) for detailed instructions.
+
+### What You'll See
+- 📊 Interactive HTML reports
+- 📄 JSON data exports
+- 🔗 Story connections and clusters
+- 📈 Timeline visualizations
+
+Reports update automatically on push to main, or manually via Actions.
+

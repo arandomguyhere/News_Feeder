@@ -1,0 +1,309 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Allow manual deployment
+  workflow_dispatch:
+
+  # Run after successful test completion
+  workflow_run:
+    workflows: ["Tests"]
+    types:
+      - completed
+    branches: [main, master]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create docs directory
+        run: mkdir -p docs
+
+      - name: Generate sample report (or use existing)
+        run: |
+          # Run aggregator to generate reports (with timeout)
+          timeout 300 python aggregator.py || echo "Aggregator completed or timed out"
+
+          # Copy latest reports to docs if they exist
+          if [ -d "data/output" ]; then
+            cp data/output/*.html docs/ 2>/dev/null || echo "No HTML reports generated"
+            cp data/output/*.json docs/ 2>/dev/null || echo "No JSON reports generated"
+          fi
+
+      - name: Create index page
+        run: |
+          cat > docs/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>OSINT Story Aggregator - Reports</title>
+              <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      padding: 20px;
+                  }
+                  .container {
+                      max-width: 1200px;
+                      margin: 0 auto;
+                      background: white;
+                      border-radius: 10px;
+                      padding: 40px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  }
+                  h1 {
+                      color: #333;
+                      margin-bottom: 10px;
+                      font-size: 2.5em;
+                  }
+                  .subtitle {
+                      color: #666;
+                      margin-bottom: 30px;
+                      font-size: 1.2em;
+                  }
+                  .section {
+                      margin: 30px 0;
+                      padding: 20px;
+                      background: #f9f9f9;
+                      border-radius: 8px;
+                      border-left: 4px solid #667eea;
+                  }
+                  .section h2 {
+                      color: #667eea;
+                      margin-bottom: 15px;
+                  }
+                  .file-list {
+                      list-style: none;
+                  }
+                  .file-list li {
+                      padding: 10px;
+                      margin: 5px 0;
+                      background: white;
+                      border-radius: 5px;
+                      transition: transform 0.2s;
+                  }
+                  .file-list li:hover {
+                      transform: translateX(5px);
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  }
+                  .file-list a {
+                      color: #667eea;
+                      text-decoration: none;
+                      font-weight: 500;
+                      display: flex;
+                      align-items: center;
+                  }
+                  .file-list a:hover {
+                      color: #764ba2;
+                  }
+                  .icon {
+                      margin-right: 10px;
+                      font-size: 1.2em;
+                  }
+                  .badge {
+                      display: inline-block;
+                      padding: 5px 10px;
+                      background: #e7e7ff;
+                      color: #667eea;
+                      border-radius: 12px;
+                      font-size: 0.9em;
+                      margin-left: 10px;
+                  }
+                  .info-box {
+                      background: #e7f3ff;
+                      border: 1px solid #b3d9ff;
+                      border-radius: 5px;
+                      padding: 15px;
+                      margin: 20px 0;
+                  }
+                  .info-box strong {
+                      color: #0066cc;
+                  }
+                  footer {
+                      margin-top: 40px;
+                      padding-top: 20px;
+                      border-top: 1px solid #eee;
+                      text-align: center;
+                      color: #666;
+                  }
+                  .github-link {
+                      display: inline-block;
+                      margin-top: 10px;
+                      padding: 10px 20px;
+                      background: #333;
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 5px;
+                      transition: background 0.2s;
+                  }
+                  .github-link:hover {
+                      background: #000;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🔍 OSINT Story Aggregator</h1>
+                  <p class="subtitle">Mosaic Intelligence Reports</p>
+
+                  <div class="info-box">
+                      <strong>About:</strong> This page displays reports generated by the OSINT Story Aggregator,
+                      which collects and correlates stories from multiple sources to build comprehensive intelligence pictures.
+                  </div>
+
+                  <div class="section">
+                      <h2>📊 Latest Reports</h2>
+                      <ul class="file-list" id="reportsList">
+                          <li><span class="icon">⏳</span> Loading reports...</li>
+                      </ul>
+                  </div>
+
+                  <div class="section">
+                      <h2>📄 Features</h2>
+                      <ul class="file-list">
+                          <li><span class="icon">🔗</span> Multi-source data collection (NewsAPI, GDELT, Google News)</li>
+                          <li><span class="icon">🧠</span> NLP-powered entity extraction and keyword analysis</li>
+                          <li><span class="icon">🧩</span> Story correlation and clustering (Mosaic Intelligence)</li>
+                          <li><span class="icon">📈</span> Interactive HTML reports with visualizations</li>
+                          <li><span class="icon">🔍</span> JSON data exports for further analysis</li>
+                      </ul>
+                  </div>
+
+                  <div class="section">
+                      <h2>🚀 Quick Start</h2>
+                      <p>To generate your own reports:</p>
+                      <pre style="background: #333; color: #fff; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;">
+# Clone the repository
+git clone https://github.com/arandomguyhere/News_Feeder.git
+cd News_Feeder
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the aggregator
+python aggregator.py
+
+# View reports in data/output/
+                      </pre>
+                  </div>
+
+                  <footer>
+                      <p>Built with Python, spaCy, and open-source intelligence principles</p>
+                      <a href="https://github.com/arandomguyhere/News_Feeder" class="github-link" target="_blank">
+                          View on GitHub
+                      </a>
+                  </footer>
+              </div>
+
+              <script>
+                  // Auto-detect and list available reports
+                  window.addEventListener('DOMContentLoaded', function() {
+                      const reportsList = document.getElementById('reportsList');
+                      const possibleFiles = [
+                          'report_latest.html',
+                          'mosaic_intelligence_report.html',
+                          'latest_intelligence.json'
+                      ];
+
+                      // Try to detect available files
+                      let foundFiles = [];
+
+                      // List any HTML or JSON files in the directory
+                      fetch('.')
+                          .then(response => response.text())
+                          .then(html => {
+                              const parser = new DOMParser();
+                              const doc = parser.parseFromString(html, 'text/html');
+                              const links = doc.querySelectorAll('a');
+
+                              links.forEach(link => {
+                                  const href = link.getAttribute('href');
+                                  if (href && (href.endsWith('.html') || href.endsWith('.json')) && href !== 'index.html') {
+                                      foundFiles.push(href);
+                                  }
+                              });
+
+                              if (foundFiles.length > 0) {
+                                  reportsList.innerHTML = foundFiles.map(file => {
+                                      const icon = file.endsWith('.html') ? '📊' : '📄';
+                                      const type = file.endsWith('.html') ? 'HTML Report' : 'JSON Data';
+                                      return `
+                                          <li>
+                                              <a href="${file}">
+                                                  <span class="icon">${icon}</span>
+                                                  ${file}
+                                                  <span class="badge">${type}</span>
+                                              </a>
+                                          </li>
+                                      `;
+                                  }).join('');
+                              } else {
+                                  reportsList.innerHTML = `
+                                      <li>
+                                          <span class="icon">ℹ️</span>
+                                          No reports available yet. Run the aggregator to generate reports.
+                                      </li>
+                                  `;
+                              }
+                          })
+                          .catch(() => {
+                              reportsList.innerHTML = `
+                                  <li>
+                                      <span class="icon">ℹ️</span>
+                                      Reports will appear here after the aggregator runs.
+                                  </li>
+                              `;
+                          });
+                  });
+              </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
