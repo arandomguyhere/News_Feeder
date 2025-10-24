@@ -49,7 +49,8 @@ sources:
 # Processing settings
 processing:
   # Minimum similarity score to consider stories related (0.0-1.0)
-  similarity_threshold: 0.3
+  # Lower values (0.1-0.2) find more connections, higher values (0.4+) are stricter
+  similarity_threshold: 0.15
 
   # Maximum age of stories to process (in hours)
   max_story_age_hours: 48
@@ -69,7 +70,7 @@ processing:
 
 # Output settings
 output:
-  format: "json"  # json, html, or both
+  format: "both"  # json, html, or both
   directory: "data/output"
 
   # Generate report files
