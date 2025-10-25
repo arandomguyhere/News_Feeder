@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 """
 Combined OSINT Intelligence Aggregator
-Merges cyber threat intelligence (51 searches) with military drone intelligence (53 searches)
-for comprehensive OSINT mosaic intelligence picture.
+Comprehensive intelligence collection across 4 critical domains:
+- Cyber Threat Intelligence (84 searches)
+- Military Drone Intelligence (53 searches)
+Total: 137 targeted OSINT searches for Daily Drop newsletter feed.
+
+Coverage:
+- Nation-state cyber threats (China, Russia, Iran, DPRK)
+- APT groups (Salt Typhoon, Volt Typhoon, etc.)
+- Military UAV operations & autonomous systems
+- Semiconductor supply chain & critical minerals
+- Economic warfare & export controls
+- Space/satellite intelligence & warfare
 """
 
 import os
@@ -297,9 +307,15 @@ def main():
     print("\n" + "="*60)
     print("COMBINED OSINT INTELLIGENCE AGGREGATOR")
     print("="*60)
-    print("Cyber Threat Intelligence: 51 searches")
+    print("Cyber Threat Intelligence: 84 searches")
+    print("  - APTs, nation-states, vulnerabilities")
+    print("  - Semiconductor supply chain")
+    print("  - Economic warfare & sanctions")
+    print("  - Space/satellite intelligence")
     print("Military Drone Intelligence: 53 searches")
-    print("Total: 104 targeted OSINT searches")
+    print("  - Combat UAVs, autonomous systems")
+    print("  - Geopolitical programs, counter-drone")
+    print("Total: 137 targeted OSINT searches")
     print("="*60 + "\n")
 
     # Collect cyber threat intelligence

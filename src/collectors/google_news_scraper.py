@@ -334,6 +334,45 @@ class MultiSearchGoogleNews:
             ("site:krebsonsecurity.com when:24h", "Krebs Security"),
             ("site:darkreading.com when:24h", "Dark Reading"),
             ("site:securityweek.com when:24h", "Security Week"),
+
+            # Semiconductor & Supply Chain Intelligence (15 searches)
+            ("semiconductor supply chain when:24h", "Chip Supply Chain"),
+            ("TSMC geopolitics when:24h", "TSMC Geopolitics"),
+            ("rare earth exports when:24h", "Rare Earth Supply"),
+            ("critical minerals shortage when:24h", "Critical Minerals"),
+            ("chip sanctions when:24h", "Semiconductor Sanctions"),
+            ("fab construction when:24h", "Semiconductor Manufacturing"),
+            ("ASML export controls when:24h", "Lithography Controls"),
+            ("Nexperia Wingtech when:24h", "Chip M&A Security"),
+            ("gallium germanium export when:24h", "Critical Materials"),
+            ("silicon wafer shortage when:24h", "Wafer Supply"),
+            ("automotive chip shortage when:24h", "Auto Semiconductors"),
+            ("China chip self-sufficiency when:24h", "China Chips"),
+            ("US CHIPS Act when:24h", "CHIPS Act"),
+            ("Intel foundry when:24h", "US Foundries"),
+            ("Samsung TSMC competition when:24h", "Foundry Competition"),
+
+            # Economic Warfare & Trade (10 searches)
+            ("China export controls when:24h", "Export Controls"),
+            ("CFIUS review when:24h", "Investment Security"),
+            ("technology sanctions when:24h", "Tech Sanctions"),
+            ("dual-use export ban when:24h", "Dual-Use Controls"),
+            ("Entity List China when:24h", "Entity List"),
+            ("trade war tariffs when:24h", "Trade War"),
+            ("forced technology transfer when:24h", "Tech Transfer"),
+            ("Huawei sanctions when:24h", "Huawei Restrictions"),
+            ("ZTE compliance when:24h", "Telecom Sanctions"),
+            ("BIS export administration when:24h", "BIS Controls"),
+
+            # Space & Satellite Intelligence (8 searches)
+            ("Starlink military when:24h", "Starlink Military"),
+            ("satellite hacking when:24h", "Satellite Security"),
+            ("space domain warfare when:24h", "Space Warfare"),
+            ("anti-satellite weapon when:24h", "ASAT"),
+            ("LEO constellation security when:24h", "LEO Security"),
+            ("GPS jamming when:24h", "Navigation Warfare"),
+            ("space cyber attack when:24h", "Space Cyber"),
+            ("satellite ground station when:24h", "Ground Segment"),
         ]
 
         all_articles = []
