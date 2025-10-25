@@ -2,79 +2,121 @@
 """Create index.html for GitHub Pages"""
 
 import os
+from pathlib import Path
+from datetime import datetime
 
-html_content = '''<!DOCTYPE html>
+# Scan docs directory for report files
+docs_dir = Path('docs')
+docs_dir.mkdir(exist_ok=True)
+
+html_files = sorted(docs_dir.glob('*.html'), key=os.path.getmtime, reverse=True)
+json_files = sorted(docs_dir.glob('*.json'), key=os.path.getmtime, reverse=True)
+
+# Filter out index.html
+html_files = [f for f in html_files if f.name != 'index.html']
+
+# Build file list HTML
+files_html = ''
+if html_files or json_files:
+    for html_file in html_files:
+        file_time = datetime.fromtimestamp(html_file.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+        files_html += f'''
+            <li>
+                <a href="{html_file.name}">
+                    <span class="icon">📊</span>
+                    {html_file.name}
+                    <span class="badge">HTML Report</span>
+                    <span class="time">{file_time}</span>
+                </a>
+            </li>'''
+
+    for json_file in json_files:
+        file_time = datetime.fromtimestamp(json_file.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+        files_html += f'''
+            <li>
+                <a href="{json_file.name}">
+                    <span class="icon">📄</span>
+                    {json_file.name}
+                    <span class="badge">JSON Data</span>
+                    <span class="time">{file_time}</span>
+                </a>
+            </li>'''
+else:
+    files_html = '<li><span class="icon">ℹ️</span> No reports available yet. Run the aggregator to generate reports.</li>'
+
+html_content = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OSINT Story Aggregator - Reports</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-        }
-        .container {
+        }}
+        .container {{
             max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 10px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 {
+        }}
+        h1 {{
             color: #333;
             margin-bottom: 10px;
             font-size: 2.5em;
-        }
-        .subtitle {
+        }}
+        .subtitle {{
             color: #666;
             margin-bottom: 30px;
             font-size: 1.2em;
-        }
-        .section {
+        }}
+        .section {{
             margin: 30px 0;
             padding: 20px;
             background: #f9f9f9;
             border-radius: 8px;
             border-left: 4px solid #667eea;
-        }
-        .section h2 {
+        }}
+        .section h2 {{
             color: #667eea;
             margin-bottom: 15px;
-        }
-        .file-list {
+        }}
+        .file-list {{
             list-style: none;
-        }
-        .file-list li {
+        }}
+        .file-list li {{
             padding: 10px;
             margin: 5px 0;
             background: white;
             border-radius: 5px;
             transition: transform 0.2s;
-        }
-        .file-list li:hover {
+        }}
+        .file-list li:hover {{
             transform: translateX(5px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .file-list a {
+        }}
+        .file-list a {{
             color: #667eea;
             text-decoration: none;
             font-weight: 500;
             display: flex;
             align-items: center;
-        }
-        .file-list a:hover {
+            flex-wrap: wrap;
+        }}
+        .file-list a:hover {{
             color: #764ba2;
-        }
-        .icon {
+        }}
+        .icon {{
             margin-right: 10px;
             font-size: 1.2em;
-        }
-        .badge {
+        }}
+        .badge {{
             display: inline-block;
             padding: 5px 10px;
             background: #e7e7ff;
@@ -82,25 +124,31 @@ html_content = '''<!DOCTYPE html>
             border-radius: 12px;
             font-size: 0.9em;
             margin-left: 10px;
-        }
-        .info-box {
+        }}
+        .time {{
+            display: inline-block;
+            margin-left: auto;
+            font-size: 0.85em;
+            color: #999;
+        }}
+        .info-box {{
             background: #e7f3ff;
             border: 1px solid #b3d9ff;
             border-radius: 5px;
             padding: 15px;
             margin: 20px 0;
-        }
-        .info-box strong {
+        }}
+        .info-box strong {{
             color: #0066cc;
-        }
-        footer {
+        }}
+        footer {{
             margin-top: 40px;
             padding-top: 20px;
             border-top: 1px solid #eee;
             text-align: center;
             color: #666;
-        }
-        .github-link {
+        }}
+        .github-link {{
             display: inline-block;
             margin-top: 10px;
             padding: 10px 20px;
@@ -109,16 +157,16 @@ html_content = '''<!DOCTYPE html>
             text-decoration: none;
             border-radius: 5px;
             transition: background 0.2s;
-        }
-        .github-link:hover {
+        }}
+        .github-link:hover {{
             background: #000;
-        }
-        code {
+        }}
+        code {{
             background: #f5f5f5;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: monospace;
-        }
+        }}
     </style>
 </head>
 <body>
@@ -133,8 +181,8 @@ html_content = '''<!DOCTYPE html>
 
         <div class="section">
             <h2>📊 Latest Reports</h2>
-            <ul class="file-list" id="reportsList">
-                <li><span class="icon">⏳</span> Loading reports...</li>
+            <ul class="file-list">
+                {files_html}
             </ul>
         </div>
 
@@ -161,51 +209,21 @@ html_content = '''<!DOCTYPE html>
         </div>
 
         <footer>
-            <p>Built with Python, spaCy, and open-source intelligence principles</p>
+            <p>Built with Python, scikit-learn, and open-source intelligence principles</p>
             <a href="https://github.com/arandomguyhere/News_Feeder" class="github-link" target="_blank">
                 View on GitHub
             </a>
         </footer>
     </div>
-
-    <script>
-        window.addEventListener('DOMContentLoaded', function() {
-            const reportsList = document.getElementById('reportsList');
-            fetch('.')
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const links = doc.querySelectorAll('a');
-                    let foundFiles = [];
-
-                    links.forEach(link => {
-                        const href = link.getAttribute('href');
-                        if (href && (href.endsWith('.html') || href.endsWith('.json')) && href !== 'index.html') {
-                            foundFiles.push(href);
-                        }
-                    });
-
-                    if (foundFiles.length > 0) {
-                        reportsList.innerHTML = foundFiles.map(file => {
-                            const icon = file.endsWith('.html') ? '📊' : '📄';
-                            const type = file.endsWith('.html') ? 'HTML Report' : 'JSON Data';
-                            return '<li><a href="' + file + '"><span class="icon">' + icon + '</span>' + file + '<span class="badge">' + type + '</span></a></li>';
-                        }).join('');
-                    } else {
-                        reportsList.innerHTML = '<li><span class="icon">ℹ️</span> No reports available yet. Run the aggregator to generate reports.</li>';
-                    }
-                })
-                .catch(() => {
-                    reportsList.innerHTML = '<li><span class="icon">ℹ️</span> Reports will appear here after the aggregator runs.</li>';
-                });
-        });
-    </script>
 </body>
 </html>
 '''
 
-os.makedirs('docs', exist_ok=True)
 with open('docs/index.html', 'w') as f:
     f.write(html_content)
+
 print('✅ Index page created successfully at docs/index.html')
+if html_files or json_files:
+    print(f'   Found {len(html_files)} HTML reports and {len(json_files)} JSON files')
+else:
+    print('   No reports found in docs/ directory yet')
