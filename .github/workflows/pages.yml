@@ -42,7 +42,7 @@ jobs:
 
       - name: Generate reports
         run: |
-          timeout 600 python aggregator.py || echo "Aggregator completed or timed out"
+          timeout 600 python mosaic_intelligence.py || echo "Mosaic intelligence completed or timed out"
           if [ -d "data/output" ]; then
             cp data/output/*.html docs/ 2>/dev/null || echo "No HTML reports"
             cp data/output/*.json docs/ 2>/dev/null || echo "No JSON reports"
