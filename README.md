@@ -1,6 +1,13 @@
 # 🔍 OSINT Story Aggregator - Mosaic Intelligence
 
+![Tests](https://github.com/arandomguyhere/News_Feeder/actions/workflows/test.yml/badge.svg)
+![Lint](https://github.com/arandomguyhere/News_Feeder/actions/workflows/lint.yml/badge.svg)
+![Security](https://github.com/arandomguyhere/News_Feeder/actions/workflows/security.yml/badge.svg)
+![Pages](https://github.com/arandomguyhere/News_Feeder/actions/workflows/pages.yml/badge.svg)
+
 A Python-based OSINT (Open Source Intelligence) tool that collects stories from multiple sources and identifies related content to build comprehensive intelligence pictures. Think of it as **mosaic intelligence** - individual stories are tiles that contribute to a bigger picture.
+
+**🌐 Live Demo:** [https://arandomguyhere.github.io/News_Feeder/](https://arandomguyhere.github.io/News_Feeder/)
 
 ## 🎯 Features
 
@@ -72,6 +79,12 @@ source venv/bin/activate
 python aggregator.py
 ```
 
+> **📌 Which Script to Use?**
+> - `aggregator.py` - **Recommended** - Multi-source (NewsAPI, GDELT, Google/Bing News)
+> - `mosaic_intelligence.py` - Specialized for Google News with 50+ cyber threat searches
+>
+> Use `aggregator.py` for general OSINT, or `mosaic_intelligence.py` for focused cybersecurity intelligence.
+
 The aggregator will:
 1. Collect stories from all configured sources
 2. Process them with NLP to extract entities and keywords
@@ -103,7 +116,7 @@ sources:
       - "intelligence"
 
 processing:
-  similarity_threshold: 0.3  # 0.0-1.0
+  similarity_threshold: 0.15  # 0.0-1.0 (lower = more connections)
   max_story_age_hours: 48
 
 output:
@@ -271,3 +284,26 @@ For issues and questions:
 ---
 
 **Built with Python, spaCy, and open-source intelligence principles**
+
+## 🌐 View Reports Online (GitHub Pages)
+
+You can view your generated reports online using GitHub Pages!
+
+**Your GitHub Pages URL:** https://arandomguyhere.github.io/News_Feeder/
+
+### Setup (One-Time)
+1. Go to **Settings** → **Pages** in your GitHub repository
+2. Under "Build and deployment", set **Source** to **GitHub Actions**
+3. Go to **Actions** tab → **Deploy to GitHub Pages** → **Run workflow**
+4. Wait 2-3 minutes and visit your Pages URL
+
+See [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) for detailed instructions.
+
+### What You'll See
+- 📊 Interactive HTML reports
+- 📄 JSON data exports
+- 🔗 Story connections and clusters
+- 📈 Timeline visualizations
+
+Reports update automatically on push to main, or manually via Actions.
+
