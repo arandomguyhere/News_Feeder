@@ -1,7 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
-  workflow_dispatch:
+  schedule:
+    # Run every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */6 * * *'
+  workflow_dispatch:  # Allow manual trigger
   workflow_run:
     workflows: ["Tests"]
     types:
@@ -42,11 +45,19 @@ jobs:
 
       - name: Generate reports
         run: |
-          timeout 600 python aggregator.py || echo "Aggregator completed or timed out"
+          timeout 900 python combined_intelligence.py || echo "Combined intelligence completed or timed out"
           if [ -d "data/output" ]; then
             cp data/output/*.html docs/ 2>/dev/null || echo "No HTML reports"
             cp data/output/*.json docs/ 2>/dev/null || echo "No JSON reports"
           fi
+
+      - name: Clean old reports (keep last 7 days)
+        run: |
+          cd docs
+          # Keep reports from last 7 days, delete older ones
+          find . -name "*.html" -type f -mtime +7 -delete 2>/dev/null || true
+          find . -name "*.json" -type f -mtime +7 -delete 2>/dev/null || true
+          echo "Cleaned old reports (kept last 7 days)"
 
       - name: Create index page
         run: python create_index.py

@@ -113,7 +113,28 @@ class OsintAggregator:
 
         self.logger.info(f"\nCollected {len(stories)} unique stories from {len(self.collectors)} sources")
 
-        return stories
+        # Filter for OSINT-relevant content
+        filtered_stories = self._filter_osint_stories(stories)
+        if len(filtered_stories) < len(stories):
+            self.logger.info(f"Filtered to {len(filtered_stories)} OSINT-relevant stories (removed {len(stories) - len(filtered_stories)} general news)")
+
+        return filtered_stories
+
+    def _filter_osint_stories(self, stories: List[Story]) -> List[Story]:
+        """Filter stories to only include OSINT/cyber intelligence content."""
+        required_keywords = self.config.get('processing', {}).get('required_keywords', [])
+
+        if not required_keywords:
+            return stories
+
+        filtered = []
+        for story in stories:
+            # Check if story contains any required keyword (case-insensitive)
+            content = (story.title + " " + story.description).lower()
+            if any(keyword.lower() in content for keyword in required_keywords):
+                filtered.append(story)
+
+        return filtered
 
     def correlate_stories(self, stories: List[Story]):
         """Find related stories and create clusters."""
