@@ -121,6 +121,13 @@ class OsintAggregator:
         self.logger.info("Correlating stories...")
         self.logger.info("=" * 60)
 
+        # Limit stories to prevent timeout with large datasets
+        max_stories = self.config.get('processing', {}).get('max_stories_to_correlate', 300)
+        if len(stories) > max_stories:
+            self.logger.warning(f"Limiting correlation to {max_stories} most recent stories (out of {len(stories)} total)")
+            # Sort by published_date and take most recent
+            stories = sorted(stories, key=lambda s: s.published_date, reverse=True)[:max_stories]
+
         clusters = self.correlator.find_related_stories(stories)
 
         return clusters
