@@ -115,6 +115,9 @@ class StoryCorrelator:
     def _find_relationships(self, processed_stories: List[Dict]) -> List[Tuple[int, int, float]]:
         """Find relationships between stories based on similarity."""
         relationships = []
+        total_comparisons = len(processed_stories) * (len(processed_stories) - 1) // 2
+        comparisons_done = 0
+        last_log_percent = 0
 
         # Compare each story with every other story
         for i, story1 in enumerate(processed_stories):
@@ -123,6 +126,13 @@ class StoryCorrelator:
 
                 if similarity >= self.similarity_threshold:
                     relationships.append((i, j, similarity))
+
+                # Progress logging every 10%
+                comparisons_done += 1
+                percent_done = int((comparisons_done / total_comparisons) * 100)
+                if percent_done >= last_log_percent + 10:
+                    logger.info(f"Correlation progress: {percent_done}% ({comparisons_done}/{total_comparisons} comparisons)")
+                    last_log_percent = percent_done
 
         logger.info(f"Found {len(relationships)} story relationships")
         return relationships

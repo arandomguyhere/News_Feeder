@@ -25,7 +25,7 @@ sources:
       - "military"
       - "intelligence"
       - "surveillance"
-    max_records: 250
+    max_records: 50  # Reduced from 250 to prevent correlation timeout
 
   # Web scrapers for specific OSINT sources
   scrapers:
@@ -54,6 +54,9 @@ processing:
 
   # Maximum age of stories to process (in hours)
   max_story_age_hours: 48
+
+  # Maximum total stories to correlate (prevents timeout with large datasets)
+  max_stories_to_correlate: 300
 
   # Entity extraction settings
   entity_types:
