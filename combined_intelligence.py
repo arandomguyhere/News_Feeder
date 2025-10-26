@@ -321,12 +321,60 @@ def main():
     # Collect cyber threat intelligence
     print("📡 PHASE 1: Collecting Cyber Threat Intelligence...")
     print("="*60)
-    cyber_stories = scrape_google_news_multi()
+    cyber_stories = []
+    try:
+        cyber_stories = scrape_google_news_multi()
+        if not cyber_stories:
+            print("⚠️  WARNING: Cyber scraper returned 0 stories!")
+            print("   Possible causes:")
+            print("   - Google News rate limiting/blocking")
+            print("   - Network connectivity issues")
+            print("   - HTML structure changed")
+    except Exception as e:
+        print(f"❌ ERROR in cyber intelligence collection: {str(e)}")
+        print(f"   Exception type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
 
     # Collect military drone intelligence
     print("\n📡 PHASE 2: Collecting Military Drone Intelligence...")
     print("="*60)
-    drone_stories = scrape_drone_news_multi()
+    drone_stories = []
+    try:
+        drone_stories = scrape_drone_news_multi()
+        if not drone_stories:
+            print("⚠️  WARNING: Drone scraper returned 0 stories!")
+            print("   Possible causes:")
+            print("   - Google News rate limiting/blocking")
+            print("   - Network connectivity issues")
+            print("   - HTML structure changed")
+    except Exception as e:
+        print(f"❌ ERROR in drone intelligence collection: {str(e)}")
+        print(f"   Exception type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+
+    # Validate we got SOME data
+    if not cyber_stories and not drone_stories:
+        print("\n" + "="*60)
+        print("❌ CRITICAL ERROR: NO STORIES COLLECTED")
+        print("="*60)
+        print("Both scrapers returned 0 stories.")
+        print("This indicates a systematic collection failure.")
+        print()
+        print("Common causes:")
+        print("  1. Google News blocking automated requests (most likely)")
+        print("  2. Network/firewall blocking outbound connections")
+        print("  3. Google News HTML structure changed")
+        print("  4. Rate limiting from too many requests (137 searches)")
+        print()
+        print("Recommended fixes:")
+        print("  1. Add longer delays between requests")
+        print("  2. Use rotating User-Agents")
+        print("  3. Switch to Google News RSS feeds")
+        print("  4. Reduce number of searches per run")
+        print("="*60)
+        # Still generate report to show the error
 
     # Merge all intelligence
     all_stories = merge_intelligence_sources(cyber_stories, drone_stories)
@@ -334,30 +382,54 @@ def main():
     # Correlate and analyze
     print("🔗 PHASE 3: Correlating Intelligence...")
     print("="*60)
-    intelligence_report = analyze_stories(all_stories, similarity_threshold=0.3)
-
-    # Add intelligence breakdown
-    intelligence_report['cyber_count'] = len(cyber_stories)
-    intelligence_report['drone_count'] = len(drone_stories)
+    intelligence_report = {}
+    try:
+        intelligence_report = analyze_stories(all_stories, similarity_threshold=0.3)
+        # Add intelligence breakdown
+        intelligence_report['cyber_count'] = len(cyber_stories)
+        intelligence_report['drone_count'] = len(drone_stories)
+        # Add all stories for HTML report
+        intelligence_report['all_stories'] = all_stories
+    except Exception as e:
+        print(f"❌ ERROR in intelligence analysis: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Create minimal report
+        intelligence_report = {
+            'timestamp': datetime.now().isoformat(),
+            'cyber_count': len(cyber_stories),
+            'drone_count': len(drone_stories),
+            'all_stories': all_stories,
+            'summary': {
+                'total_stories': len(all_stories),
+                'story_clusters': 0,
+                'error': f'Analysis failed: {str(e)}'
+            }
+        }
 
     # Save outputs
     print("\n💾 PHASE 4: Saving Reports...")
     print("="*60)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-    os.makedirs('data/output', exist_ok=True)
+    try:
+        os.makedirs('data/output', exist_ok=True)
 
-    # Save JSON report
-    save_json_report(
-        intelligence_report,
-        f'data/output/combined_intelligence_{timestamp}.json'
-    )
+        # Save JSON report
+        save_json_report(
+            intelligence_report,
+            f'data/output/combined_intelligence_{timestamp}.json'
+        )
 
-    # Save HTML report
-    save_html_report(
-        intelligence_report,
-        f'data/output/combined_intelligence_{timestamp}.html'
-    )
+        # Save HTML report
+        save_html_report(
+            intelligence_report,
+            f'data/output/combined_intelligence_{timestamp}.html'
+        )
+    except Exception as e:
+        print(f"❌ ERROR saving reports: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
     print("\n" + "="*60)
     print("✅ COMBINED INTELLIGENCE COLLECTION COMPLETE")
