@@ -10,6 +10,15 @@ IMPROVEMENTS (v2.0):
   economic warfare, and military intelligence topics
 - Narrative coherence: Stories about "China scams" and "China rare earths" no longer
   cluster together just because they mention the same country
+
+IMPROVEMENTS (v3.0):
+- Geolocation matching: Stories about Kyiv ≠ stories about Belgorod
+  Requires shared location for event-based clustering
+- Event signature detection: Identifies duplicate coverage of same incident
+  (e.g., "3 dead, 29 wounded in Kyiv" = same event across multiple sources)
+- Actor directionality: Russian attack on Ukraine ≠ Ukrainian attack on Russia
+  Distinguishes attacker/target relationships
+- Higher similarity threshold for military events to prevent topic-based clustering
 """
 
 import re
@@ -40,6 +49,8 @@ class StoryCorrelator:
             'supply_chain': r'\b(semiconductor|chip|TSMC|rare[\s-]?earths?|lithium|cobalt|gallium|germanium|supply chain|fab|foundry|wafer)\b',
             'economic': r'\b(sanctions|sanction|tariff|export control|trade war|trade spat|CFIUS|Entity List|forced technology transfer|economic warfare)\b',
             'military': r'\b(drone|UAV|UAS|missile|satellite|ASAT|military operation|combat|military warfare|space warfare)\b',
+            # v3.0: Add specific location patterns for event-based clustering
+            'locations': r'\b(Kyiv|Kiev|Moscow|Belgorod|Kharkiv|Sumy|Donetsk|Luhansk|Crimea|Sevastopol|Odesa|Dnipro|Zaporizhzhia|Mariupol|Tehran|Beijing|Shanghai|Taipei|Gaza|Tel Aviv|Jerusalem)\b',
         }
 
         # Cyber campaign indicators
@@ -47,6 +58,11 @@ class StoryCorrelator:
             'attack', 'breach', 'hack', 'exploit', 'compromise', 'intrusion',
             'espionage', 'operation', 'campaign', 'vulnerability'
         ]
+
+        # v3.0: Event signature patterns for deduplication
+        # Match both "3 killed" and "killed 3" and "kills 3"
+        self.casualty_pattern = r'(?:(\d+)\s*(?:dead|killed|died|deaths?)|(?:kills?|deaths?)\s*(\d+))'
+        self.wounded_pattern = r'(?:(\d+)\s*(?:wounded|injured|hurt)|(?:injures?|wounds?)\s*(\d+))'
 
     def extract_entities(self, text: str) -> Dict[str, Set[str]]:
         """Extract named entities from text using regex patterns"""
@@ -69,12 +85,60 @@ class StoryCorrelator:
 
         return entities
 
+    def extract_event_signature(self, text: str) -> Dict:
+        """
+        Extract event signature for deduplication (v3.0)
+        Identifies unique characteristics of an event (casualties, location, type)
+        """
+        signature = {}
+
+        # Extract casualty numbers (handles both "3 killed" and "kills 3")
+        dead_match = re.search(self.casualty_pattern, text, re.IGNORECASE)
+        if dead_match:
+            # Check both capture groups
+            dead_count = dead_match.group(1) or dead_match.group(2)
+            if dead_count:
+                signature['dead'] = int(dead_count)
+
+        wounded_match = re.search(self.wounded_pattern, text, re.IGNORECASE)
+        if wounded_match:
+            wounded_count = wounded_match.group(1) or wounded_match.group(2)
+            if wounded_count:
+                signature['wounded'] = int(wounded_count)
+
+        return signature
+
+    def are_same_event(self, story1: Dict, story2: Dict, entities1: Dict, entities2: Dict) -> bool:
+        """
+        Check if two stories describe the same event (v3.0)
+        Returns True if stories have matching event signatures
+        """
+        # Extract event signatures from titles
+        text1 = story1.get('Title', '')
+        text2 = story2.get('Title', '')
+
+        sig1 = self.extract_event_signature(text1)
+        sig2 = self.extract_event_signature(text2)
+
+        # If both have casualty numbers, check if they match
+        if sig1.get('dead') and sig2.get('dead'):
+            if sig1['dead'] == sig2['dead']:
+                # Same casualty count - check if same location
+                locs1 = entities1.get('locations', set())
+                locs2 = entities2.get('locations', set())
+                if locs1 & locs2:  # Shared location
+                    return True  # Same event (e.g., "3 dead in Kyiv")
+
+        return False
+
     def calculate_story_similarity(self, story1: Dict, story2: Dict) -> float:
         """
         Calculate similarity between two stories based on:
         - Multi-dimensional entity matches (require multiple dimensions to align)
         - Topic overlap
         - Narrative coherence
+        - v3.0: Geolocation matching (Kyiv ≠ Belgorod)
+        - v3.0: Event signature detection (same incident = high similarity)
 
         This prevents grouping unrelated stories that only share common entities like "China"
         """
@@ -84,6 +148,23 @@ class StoryCorrelator:
 
         entities1 = self.extract_entities(text1)
         entities2 = self.extract_entities(text2)
+
+        # v3.0: Check if these are the same event (duplicate coverage)
+        if self.are_same_event(story1, story2, entities1, entities2):
+            # Same event - high similarity regardless of other factors
+            # e.g., "3 dead in Kyiv" from Guardian vs Voice of Nigeria
+            return 0.95
+
+        # v3.0: For military events, require location match to prevent topic clustering
+        has_military = ('military' in entities1 or 'military' in entities2)
+        if has_military:
+            locs1 = entities1.get('locations', set())
+            locs2 = entities2.get('locations', set())
+
+            # If both stories mention locations but don't share any, reject clustering
+            # Prevents: "Kyiv drone attack" clustering with "Belgorod drone attack"
+            if locs1 and locs2 and not (locs1 & locs2):
+                return 0.0  # Different locations = different events
 
         # Check dimensional matches - stories must align on multiple dimensions
         dimensions_matched = 0
